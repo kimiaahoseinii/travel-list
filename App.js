@@ -28,11 +28,21 @@ setItems(items=>items.filter(item=> item.id !== id))
     setItems((items) =>items.map((item) => item.id === id ? {...item ,packed :! item.packed } : item))
   }
 
+  function handleClearList()
+  {
+    const confirmed = window.confirm("Are you sure you want to delete all items?")
+   if(confirmed) setItems([])
+  }
+
 return(
 <div className="app">
   <Logo/>
   <Form onAddItems = {handleAddItems}/>
-<PackingList items={items} onDeleteItem = {handleDeleteItem} onToggleItems ={handleToggleItem}/>
+<PackingList items={items}
+ onDeleteItem = {handleDeleteItem} 
+ onToggleItems ={handleToggleItem}
+ onClearList={handleClearList}
+ />
 <Stats items={items}/>
 </div>
 )
@@ -85,15 +95,41 @@ onChange={(e)=>setDescription(e.target.value)}
 
   </form>
 }
-function PackingList({items , onDeleteItem ,onToggleItems}){
+
+
+function PackingList({items , onDeleteItem ,onToggleItems, onClearList}){
+ const[sortBy , setSortBy] = useState("packed");
+
+let sortedItems;
+
+if(sortBy === "input") sortedItems = items;
+
+if(sortBy === "description") sortedItems = items.slice()
+.sort((a,b) => a.description.localeCompare (b.description) )
+
+if(sortBy === "packed") sortedItems = items.slice()
+.sort((a,b) => Number (a.packed) - Number (b.packed))
+
+
 
   return (
   <div className="list">
   <ul>
     
-    {items.map((item)=><Item item={item} key={item.id} onDeleteItem={onDeleteItem} onToggleItems={onToggleItems}/>)}
+    {sortedItems.map((item)=><Item item={item} key={item.id} onDeleteItem={onDeleteItem} onToggleItems={onToggleItems}/>)}
 
   </ul>
+  
+<div className="actions">
+  <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+    <option value="input">Sort by the input order</option>
+    <option value="description">Sort by the description</option>
+    <option value="packed">Sort by the packed status</option>
+  </select>
+
+  <button onClick={onClearList}>Clear list</button>
+</div>
+
   </div>)
 }
 
